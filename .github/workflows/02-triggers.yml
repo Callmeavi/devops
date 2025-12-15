@@ -1,0 +1,33 @@
+name: Module 2 - Type of Triggers
+
+on:
+  # Trigger 1: Push to main branch
+  push:
+    branches:
+      - main
+  
+  # Trigger 2: Pull Request targeting main branch
+  pull_request:
+    branches: 
+      - main
+
+  # Trigger 3: Manual button click (The "Run workflow" button)
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why are you running this manually?'
+        required: false
+        default: 'Testing triggers'
+
+jobs:
+  trigger-info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the trigger event
+        run: |
+          echo "This workflow was triggered by: ${{ github.event_name }}"
+          echo "Branch ref: ${{ github.ref }}"
+      
+      - name: Print manual input (if applicable)
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "Manual Reason: ${{ inputs.reason }}"
