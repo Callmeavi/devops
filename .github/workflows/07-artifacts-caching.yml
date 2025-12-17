@@ -1,0 +1,48 @@
+name: 07 - Artifacts Demo
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+
+jobs:
+    build-code:
+        name: Build Component
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Create Build Files
+              run: |
+                  mkdir build
+                  echo "Main Application Logic" > build/app.js
+                  echo "Styles" > build/style.css
+                  echo "Build Date: $(date)" > build/meta.txt
+                  echo "Files created successfully."
+
+            - name: Upload Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: my-app-build # This is the name we use to download later
+                  path: build/ # The folder we want to zip and upload
+
+    deploy-code:
+        name: Deploy Component
+        runs-on: ubuntu-latest
+        needs: build-code # Important: Must wait for build to finish
+        steps:
+            - name: Download Artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: my-app-build
+                  path: deployment-folder
+
+            - name: Verify Deployment contents
+              run: |
+                  echo "Listing files received from Build job:"
+                  ls -R deployment-folder
+                  echo "------------------------"
+                  echo "Reading Meta data:"
+                  cat deployment-folder/meta.txt
