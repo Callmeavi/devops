@@ -7,24 +7,15 @@ on:
             - main
 
 jobs:
-    test-across-versions:
-        name: Test on Node ${{ matrix.node-version }}
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                node-version: [14, 16, 18]
-
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v4
-
-            - name: Setup Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ matrix.node-version }}
-
-            - name: Verify Node Version
-              run: node -v
-
-            - name: Run Test Simulation
-              run: echo "Testing efficiently on Node version $(node -v)"
+  test-on-all-os:
+    runs-on: ${{ matrix.os }}  # <--- Yahan magic hai
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest] # 3 alag computers!
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Print OS Name
+        run: echo "Hello from ${{ matrix.os }}"
