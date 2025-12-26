@@ -1,0 +1,21 @@
+name: 08 - Path Filters Demo
+
+on:
+    push:
+        paths:
+            - "src/**" # Trigger ONLY if files inside 'src' folder change
+            - "!docs/**" # (Optional) Explicitly IGNORE 'docs' folder (Just for demo)
+        branches:
+            - main
+
+jobs:
+    run-if-src-changes:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Run Backend Tests
+              run: |
+                  echo "This job ran because a file in 'src/' was modified."
+                  echo "If you only changed README.md, this should NOT have run."
