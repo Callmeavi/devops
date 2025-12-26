@@ -1,0 +1,79 @@
+name: 09 - Capstone Pipeline
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - "README.md"
+
+jobs:
+    # Job 1: Linting Code (Checks for style errors)
+    lint:
+        name: Lint Code
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Run Linter
+              run: |
+                  echo "Runing ESLint..."
+                  echo "No errors found."
+
+    # Job 2: Running Tests (Checks for logic errors)
+    # NOTE: This runs in PARALLEL with 'lint' because there is no 'needs' keyword here.
+    test:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Run Tests
+              run: |
+                  echo "Running Jest tests..."
+                  echo "All tests passed."
+
+    # Job 3: Build Application
+    # This job will ONLY run if BOTH 'lint' and 'test' succeed.
+    build:
+        name: Build Application
+        runs-on: ubuntu-latest
+        needs: [lint, test] # <--- The dependency magic
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Compile Assets
+              run: |
+                  mkdir dist
+                  echo "<html><body><h1>Production Build</h1></body></html>" > dist/index.html
+                  echo "v1.0.0" > dist/version.txt
+
+            - name: Upload Build Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: prod-build
+                  path: dist/
+
+    # Job 4: Deploy to Production
+    # This runs LAST, only after a successful build.
+    deploy:
+        name: Deploy to Production
+        runs-on: ubuntu-latest
+        needs: build
+        if: github.ref == 'refs/heads/main' # Extra safety: Only deploy from 'main' branch
+        steps:
+            - name: Download Build Artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: prod-build
+                  path: prod-server/
+
+            - name: Deploy Script
+              run: |
+                  echo "Deploying to Production Server..."
+                  ls -R prod-server/
+                  echo "Deployment Complete! 🚀"
